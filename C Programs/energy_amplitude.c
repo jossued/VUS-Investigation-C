@@ -9,7 +9,7 @@
 #include <string.h>
 #include <time.h>
 
-#define ELEMENTS 354240
+#define ELEMENTS 118080 //354240
 #define FRAMES 738
 #define FICHERO "o1_201704121431.dat"
 #define RESULTADOS "energy_amplitud.dat"
@@ -107,9 +107,9 @@ void calcularEnergia(amplitudes *RA, FramesStruct *RF) {
     double sum = 0.0;
     int j = 0;
 
-    for (int i = 0; i < ELEMENTS; i = i + 480) {
+    for (int i = 0; i < ELEMENTS; i = i + 160) {
 //        printf("%lf\n", RA[i].amplitud_cuad);
-        for (int k = i; k < i + 480; ++k) {
+        for (int k = i; k < i + 160; ++k) {
             sum += RA[k].amplitud_cuad;
         }
         RF[j].energia = sum;
