@@ -11,25 +11,30 @@
 
 #define ELEMENTS 118080 //354240
 #define FRAMES 738
-#define FICHERO "o1_201704121431.dat"
-#define RESULTADOS "energy_amplitud.dat"
+#define FICHERO "o1.201704121431.16.dat"
+#define FICHERONORM "norm_test.txt"
+
+#define RESULTADOS "frame_energy.dat"
 //#define numThreads 2
 
 typedef struct _amplitudes {
     char tiempo[20];
     char amplitud[20];
     double amplitud_cuad;
+    double distance;
+    double amplitud_norm;
 } amplitudes;
 
 typedef struct _frames {
     double energia;
+    double ink;
 } FramesStruct;
 
 
 void leerDatos(amplitudes *R) {
 
     printf("Entro a leerDatos\n");
-    FILE *file = fopen(FICHERO, "r");
+    FILE *file = fopen(FICHERONORM, "r");
 
     char strA[20] = {};
 
@@ -54,7 +59,36 @@ void leerDatos(amplitudes *R) {
 //                printf("%s\n", R[i].amplitud);
 //                int c = getchar();
             }
-            //printf("%f\n", R[i].tiempo);
+            i++;
+        }
+        fclose(file);
+    }
+
+
+}
+
+void leerAmplitudNorm(amplitudes *R) {
+
+    printf("Entro a leerDatos\n");
+    FILE *file = fopen(FICHERONORM, "r");
+
+    char strA[20] = {};
+
+    double number;
+    int count = 0;
+    int i = 0;
+
+    if (file == NULL) {
+        perror("Error abriendo archivo");
+        exit(1);
+    } else {
+        printf("Archivo abierto correctamente\n");
+
+        while (fscanf(file, "%s", strA) != EOF) {
+//            printf("%s\n", strA);
+            sscanf(strA, "%lf", &R[i].amplitud_norm);
+//            printf("%lf\n",R[i].amplitud_norm);
+//            int c = getchar();
             i++;
         }
         fclose(file);
@@ -68,18 +102,21 @@ void calcularCuad(amplitudes *R) {
     double test;
     int i = 0;
     for (int j = 0; j < ELEMENTS * 2; ++j) {
-//        printf("%s", R[j].amplitud);
+//        printf("%s\n", R[j].tiempo);
+//        int c = getchar();
 //        test = strtod(R[j].amplitud, NULL);
         if (j % 2 != 0) {
+//            printf("%s\n", R[j].amplitud);
+//            int c = getchar();
             sscanf(R[j].amplitud, "%lf", &test);
             R[i].amplitud_cuad = pow(test, 2);
-//            printf("%.10lf\n", R[i].energia);
+//            printf("%.10lf\n", R[i].amplitud_cuad);
             i++;
         }
     }
 }
 
-void escribirStruct(amplitudes *R) {
+void escribirStruct(FramesStruct *RF) {
     FILE *outfile = fopen(RESULTADOS, "w");
     char src[100];
     if (outfile == NULL) {
@@ -87,10 +124,8 @@ void escribirStruct(amplitudes *R) {
         exit(1);
     } else {
         // write struct to file
-        for (int i = 0; i < 2 * ELEMENTS; ++i) {
-//            strcpy(src,R[i]);
-//            fwrite(src, sizeof(amplitudes), 1, outfile);
-//            printf("%s\n", R[i]);
+        for (int i = 0; i < FRAMES; ++i) {
+            fprintf(outfile,"%d\t%.15lf\n", i+1, RF[i].energia);
         }
 
         if (fwrite != 0)
@@ -114,7 +149,7 @@ void calcularEnergia(amplitudes *RA, FramesStruct *RF) {
         }
         RF[j].energia = sum;
 //        printf("%d Suma %lf\n", i, sum);
-        printf("%d Energia %.10lf\n", j, RF[j].energia);
+//        printf("%d Energia %.10lf\n", j, RF[j].energia);
 //        int c = getchar();
 
         j++;
@@ -131,11 +166,12 @@ int main(void) {
     amplitudes *REGISTROS = malloc(2 * ELEMENTS * sizeof(amplitudes));
     leerDatos(REGISTROS);
     calcularCuad(REGISTROS);
-    //escribirStruct(REGISTROS);
 
     FramesStruct RFRAMES[FRAMES];
     calcularEnergia(REGISTROS, RFRAMES);
+//    escribirStruct(RFRAMES);
 
+    leerAmplitudNorm(REGISTROS);
     /*
     clock_t begin = clock();
     calcularDistancias(REGISTROS);
