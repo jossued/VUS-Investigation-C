@@ -11,10 +11,11 @@
 
 #define ELEMENTS 118080 //354240
 #define FRAMES 738
-#define FICHERO "o1.201704121431.16.dat"
+#define FICHEROAMP "o1.201704121431.16.dat"
 #define FICHERONORM "norm_test.txt"
 
-#define RESULTADOS "frame_energy.dat"
+#define RESULTADOSE "frame_energy.dat"
+#define RESULTADOSI "frame_ink.dat"
 //#define numThreads 2
 
 typedef struct _amplitudes {
@@ -34,7 +35,7 @@ typedef struct _frames {
 void leerDatos(amplitudes *R) {
 
     printf("Entro a leerDatos\n");
-    FILE *file = fopen(FICHERONORM, "r");
+    FILE *file = fopen(FICHEROAMP, "r");
 
     char strA[20] = {};
 
@@ -116,18 +117,44 @@ void calcularCuad(amplitudes *R) {
     }
 }
 
-void escribirStruct(FramesStruct *RF) {
-    FILE *outfile = fopen(RESULTADOS, "w");
+void calcularDistancias(amplitudes *R) {
+
+    double test;
+    double y0 = 0.0;
+    int i = 1;
+    R[0].distance = sqrt(pow(R[0].amplitud_norm - y0, 2) + 1);
+    for (int j = 1; j < ELEMENTS; ++j) {
+//        printf("%lf\n", R[j].norm_test);
+//        int c = getchar();
+        R[j].distance = sqrt(pow(R[j].amplitud_norm - R[j - 1].amplitud_norm, 2) + 1);
+//        printf("%.10lf\n", R[j].distance);
+//        int c = getchar();
+
+    }
+}
+
+void escribirStruct(FramesStruct *RF, int band) {
+    FILE *outfile;
+    if (band == 0) {
+        outfile = fopen(RESULTADOSE, "w");
+    } else if (band == 1) {
+        outfile = fopen(RESULTADOSI, "w");
+    }
     char src[100];
     if (outfile == NULL) {
         fprintf(stderr, "\nError abriendo archivo\n");
         exit(1);
     } else {
         // write struct to file
-        for (int i = 0; i < FRAMES; ++i) {
-            fprintf(outfile,"%d\t%.15lf\n", i+1, RF[i].energia);
+        if (band == 0) {
+            for (int i = 0; i < FRAMES; ++i) {
+                fprintf(outfile, "%d\t%.15lf\n", i + 1, RF[i].energia);
+            }
+        } else if (band == 1) {
+            for (int i = 0; i < FRAMES; ++i) {
+                fprintf(outfile, "%d\t%.15lf\n", i + 1, RF[i].ink);
+            }
         }
-
         if (fwrite != 0)
             printf("contents to file written successfully !\n");
         else
@@ -159,6 +186,27 @@ void calcularEnergia(amplitudes *RA, FramesStruct *RF) {
     }
 }
 
+void calcularInk(amplitudes *RA, FramesStruct *RF) {
+    double sum = 0.0;
+    int j = 0;
+
+    for (int i = 0; i < ELEMENTS; i = i + 160) {
+//        printf("%lf\n", RA[i].amplitud_cuad);
+        for (int k = i; k < i + 160; ++k) {
+            sum += RA[k].distance;
+        }
+        RF[j].ink = sum/160;
+//        printf("%d Suma %lf\n", i, sum);
+//        printf("%d Energia %.10lf\n", j, RF[j].energia);
+//        int c = getchar();
+
+        j++;
+
+        sum = 0.00;
+
+    }
+}
+
 
 int main(void) {
 
@@ -169,9 +217,13 @@ int main(void) {
 
     FramesStruct RFRAMES[FRAMES];
     calcularEnergia(REGISTROS, RFRAMES);
-//    escribirStruct(RFRAMES);
+    escribirStruct(RFRAMES, 0); //0 -> Energia
 
     leerAmplitudNorm(REGISTROS);
+    calcularDistancias(REGISTROS);
+    calcularInk(REGISTROS, RFRAMES);
+
+    escribirStruct(RFRAMES, 1); //1 -> Ink
     /*
     clock_t begin = clock();
     calcularDistancias(REGISTROS);
