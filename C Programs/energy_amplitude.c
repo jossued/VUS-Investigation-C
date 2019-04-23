@@ -15,7 +15,9 @@
 #define FICHERONORM "norm_test.txt"
 
 #define RESULTADOSE "frame_energy.dat"
+#define RESULTADOSEL "frame_energy_log.dat"
 #define RESULTADOSI "frame_ink.dat"
+#define RESULTADOSIL "frame_ink_log.dat"
 //#define numThreads 2
 
 typedef struct _amplitudes {
@@ -28,7 +30,9 @@ typedef struct _amplitudes {
 
 typedef struct _frames {
     double energia;
+    double energia_log;
     double ink;
+    double ink_log;
 } FramesStruct;
 
 
@@ -165,6 +169,47 @@ void escribirStruct(FramesStruct *RF, int band) {
     }
 }
 
+double escribirStructLog(FramesStruct *RF, int band) {
+    FILE *outfile;
+    if (band == 0) {
+        outfile = fopen(RESULTADOSEL, "w");
+    } else if (band == 1) {
+        outfile = fopen(RESULTADOSIL, "w");
+    }
+    char src[100];
+    if (outfile == NULL) {
+        fprintf(stderr, "\nError abriendo archivo\n");
+        return -1;
+    } else {
+        // write struct to file
+        sum = 0;
+        if (band == 0) {
+            for (int i = 0; i < FRAMES; ++i) {
+                fprintf(outfile, "%d\t%.15lf\n", i + 1, RF[i].energia_log);
+                sum += RF[i].energia_log;
+            }
+        } else if (band == 1) {
+            for (int i = 0; i < FRAMES; ++i) {
+                fprintf(outfile, "%d\t%.15lf\n", i + 1, RF[i].ink_log);
+                sum += RF[i].ink_log;
+            }
+
+        }
+
+        fclose(outfile);
+
+        if (fwrite != 0){
+            printf("contents to file written successfully !\n");
+            return sum/FRAMES;
+        }
+        else{
+            printf("error writing file !\n");
+            return -1;
+        }
+
+    }
+}
+
 void calcularEnergia(amplitudes *RA, FramesStruct *RF) {
     double sum = 0.0;
     int j = 0;
@@ -175,6 +220,7 @@ void calcularEnergia(amplitudes *RA, FramesStruct *RF) {
             sum += RA[k].amplitud_cuad;
         }
         RF[j].energia = sum;
+        RF[j].energia_log = log10(sum);
 //        printf("%d Suma %lf\n", i, sum);
 //        printf("%d Energia %.10lf\n", j, RF[j].energia);
 //        int c = getchar();
@@ -196,6 +242,8 @@ void calcularInk(amplitudes *RA, FramesStruct *RF) {
             sum += RA[k].distance;
         }
         RF[j].ink = sum/160;
+        RF[j].ink_log = log10(sum/160);
+
 //        printf("%d Suma %lf\n", i, sum);
 //        printf("%d Energia %.10lf\n", j, RF[j].energia);
 //        int c = getchar();
@@ -218,12 +266,14 @@ int main(void) {
     FramesStruct RFRAMES[FRAMES];
     calcularEnergia(REGISTROS, RFRAMES);
     escribirStruct(RFRAMES, 0); //0 -> Energia
+    escribirStructLog(RFRAMES, 0); //0 -> Energia
 
     leerAmplitudNorm(REGISTROS);
     calcularDistancias(REGISTROS);
     calcularInk(REGISTROS, RFRAMES);
 
     escribirStruct(RFRAMES, 1); //1 -> Ink
+    escribirStructLog(RFRAMES, 1); //1 -> Ink
     /*
     clock_t begin = clock();
     calcularDistancias(REGISTROS);
