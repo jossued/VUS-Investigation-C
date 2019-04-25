@@ -1,0 +1,130 @@
+Notas:
+o/f/#
+5.45-5.75s
+
+SOX:
+Input File     : 'o1_201704121431.wav'
+Channels       : 1
+Sample Rate    : 48000
+Precision      : 16-bit
+Duration       : 00:00:07.38 = 354240 samples ~ 553.5 CDDA sectors
+File Size      : 709k
+Bit Rate       : 768k
+Sample Encoding: 16-bit Signed Integer PCM
+
+Input File     : 'o1_201704121431_new.wav'
+Channels       : 1
+Sample Rate    : 16000
+Precision      : 16-bit
+Duration       : 00:00:07.38 = 118080 samples ~ 553.5 CDDA sectors
+File Size      : 236k
+Bit Rate       : 256k
+Sample Encoding: 16-bit Signed Integer PCM
+
+->ministre
+->mercedi
+
+inicio de silencio:
+57.072
+inicio/fin oración:
+58.472/65.852
+
+trim: 65.852-57.072=8780 = 8.78s
+
+Unvoiced:
+Ch F K P S T Integral TH SS
+
+Voiced:
+B D G J L M N R V Y W Z Vocales
+
+Intervalos VUS:
+57.072 58.472 S
+L	58.472	58.572	V
+ə 	58.572	58.672	V
+S 	58.672	58.792	U
+(ə)
+k
+R
+e
+t
+ɛ
+R
+d
+e
+t
+a
+a
+m
+e
+R
+i
+K
+ɛ̃
+R
+ɛ
+k
+s
+t
+i
+j
+ɛ
+s
+ɔ̃
+e
+l
+ə
+m
+i
+n
+i
+s
+t
+R
+(ə)
+R
+y
+s
+d
+e
+z
+a
+f
+ɛ
+R
+Z
+e
+t
+R
+ɑ̃
+ʒ
+ɛ
+R
+S
+ɛ
+R
+g
+e
+j
+l
+a
+v
+R
+ɔ
+f
+#
+d
+i
+s
+k
+y
+t
+R
+ɔ̃
+m
+ɛ
+R
+k
+R
+ə
+d
+i
