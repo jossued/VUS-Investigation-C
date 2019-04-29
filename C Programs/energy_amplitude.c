@@ -9,10 +9,11 @@
 #include <string.h>
 #include <time.h>
 
-#define ELEMENTS 118080 //354240
-#define FRAMES 738
-#define FICHEROAMP "o1.201704121431.16.dat"
-#define FICHERONORM "norm_test.txt"
+#define ELEMENTS 130560
+const int FRAMES = ELEMENTS / 160;
+
+#define FICHEROAMP "o1_201704121431_svu.dat"
+#define FICHERONORM "norm_svu.txt"
 
 #define RESULTADOSE "frame_energy.dat"
 #define RESULTADOSEL "frame_energy_log.dat"
@@ -160,16 +161,17 @@ void escribirStruct(FramesStruct *RF, int band) {
             }
         }
         if (fwrite != 0)
-            printf("contents to file written successfully !\n");
+            printf("Escritura en archivo %d!\n", band);
         else
-            printf("error writing file !\n");
+            printf("error escribiendo archivo!\n");
 
         // close file
         fclose(outfile);
     }
 }
 
-double escribirStructLog(FramesStruct *RF, int band) {
+void escribirStructLog(FramesStruct *RF, int band) {
+//    printf("FRAMES %d\n", FRAMES);
     FILE *outfile;
     if (band == 0) {
         outfile = fopen(RESULTADOSEL, "w");
@@ -179,19 +181,19 @@ double escribirStructLog(FramesStruct *RF, int band) {
     char src[100];
     if (outfile == NULL) {
         fprintf(stderr, "\nError abriendo archivo\n");
-        return -1;
+//        return -1;
     } else {
         // write struct to file
-        sum = 0;
+//        sum = 0;
         if (band == 0) {
             for (int i = 0; i < FRAMES; ++i) {
                 fprintf(outfile, "%d\t%.15lf\n", i + 1, RF[i].energia_log);
-                sum += RF[i].energia_log;
+//                sum += RF[i].energia_log;
             }
         } else if (band == 1) {
             for (int i = 0; i < FRAMES; ++i) {
                 fprintf(outfile, "%d\t%.15lf\n", i + 1, RF[i].ink_log);
-                sum += RF[i].ink_log;
+//                sum += RF[i].ink_log;
             }
 
         }
@@ -199,12 +201,12 @@ double escribirStructLog(FramesStruct *RF, int band) {
         fclose(outfile);
 
         if (fwrite != 0){
-            printf("contents to file written successfully !\n");
-            return sum/FRAMES;
+            printf("Escritura en archivo log %d!\n", band);
+//            return sum/FRAMES;
         }
         else{
-            printf("error writing file !\n");
-            return -1;
+            printf("error escribiendo archivo log!\n");
+//            return -1;
         }
 
     }
@@ -272,17 +274,10 @@ int main(void) {
     calcularDistancias(REGISTROS);
     calcularInk(REGISTROS, RFRAMES);
 
+
     escribirStruct(RFRAMES, 1); //1 -> Ink
     escribirStructLog(RFRAMES, 1); //1 -> Ink
-    /*
-    clock_t begin = clock();
-    calcularDistancias(REGISTROS);
-    clock_t end = clock();
-    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
 
-    printf("Tiempo: %.5f segundos\n", time_spent);
-
-    */
     return 0;
 
 }
