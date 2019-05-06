@@ -11,7 +11,7 @@
 
 #define ELEMENTS 130560
 const int FRAMES = ELEMENTS / 160;
-#define NUMTHRESHOLDS 5
+#define NUMTHRESHOLDS 4
 
 #define FICHEROAMP "o1_201704121431_svu.dat"
 #define FICHERONORM "norm_svu.txt"
@@ -228,9 +228,10 @@ void escribirLimites(ThresholdsStruct *RT) {
         exit(1);
     } else {
         // write struct to file
-        for (int i = 0; i < NUMTHRESHOLDS; ++i) {
+        for (int i = 0; i < NUMTHRESHOLDS-1; ++i) {
             fprintf(outfile, "%s\t%.15lf\n", RT[i].tipo, RT[i].threshold);
         }
+        fprintf(outfile, "%s\t%.15lf", RT[NUMTHRESHOLDS-1].tipo, RT[NUMTHRESHOLDS-1].threshold);
         if (fwrite != 0)
             printf("Escritura en archivo!\n");
         else

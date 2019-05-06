@@ -157,3 +157,10 @@ Accuracy = (TP+TN)/(TP+FP+FN+TN)
 
 F1 = 2* (Precision*Recall)/(Precision+Recall)
 
+M 		A 		R
+V 		V 		TPv TNu TNs
+V 		U|S 	FNv
+U|S 	V 		FNu
+
+U  		U 		TPu TNv TNs
+S 		S 		TPs TNv TNu
