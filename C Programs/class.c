@@ -296,35 +296,73 @@ void ResultadosClassEnergia(FramesLogStruct *REL, FramesClassifStruct *RFMC) {
     int FPs = 0;
     int FNs = 0;
 
-    for (int i = 0; i < FRAMES; ++i) {
-        if (RFMC[i].clasificacion == REL[i].clasificacion) {
-//            printf("Iguales: M -> %c A -> %c \n", RFMC[i].clasificacion, REL[i].clasificacion);
-            switch (RFMC[i].clasificacion) {
-                case 'V':
-                    printf("Iguales: Mv -> %c Av -> %c \n", RFMC[i].clasificacion, REL[i].clasificacion);
-                    TNu++;
-                    TPv++;
-                    TNs++;
-                    break;
-                case 'U':
-                    printf("Iguales: Mu -> %c Au -> %c \n", RFMC[i].clasificacion, REL[i].clasificacion);
-                    TPu++;
-                    TNv++;
-                    TNs++;
-                    break;
-                case 'S':
-                    printf("Iguales: Ms -> %c As -> %c \n", RFMC[i].clasificacion, REL[i].clasificacion);
-                    TNu++;
-                    TNv++;
-                    TPs++;
-                    break;
-            }
-        } else if (RFMC[i].clasificacion == 'V' && REL[i].clasificacion == 'U') {
-            
+    double precisionV = 0.0;
 
-//            printf("Diferentes: (M -> %c A -> %c) \n", RFMC[i].clasificacion, REL[i].clasificacion);
+    for (int i = 0; i < FRAMES; ++i) {
+        if (RFMC[i].clasificacion == 'V') {
+            if (REL[i].clasificacion == 'V') {
+                TPv++;
+                TNu++;
+                TNs++;
+            } else if (REL[i].clasificacion == 'U') {
+                FNv++;
+                FPu++;
+                TNs++;
+            } else if (REL[i].clasificacion == 'S') {
+                FNv++;
+                TNu++;
+                FPs++;
+            }
+        } else if (RFMC[i].clasificacion == 'U') {
+            if (REL[i].clasificacion == 'U') {
+                TPu++;
+                TNv++;
+                TNs++;
+            } else if (REL[i].clasificacion == 'V') {
+                FPv++;
+                FNu++;
+                TNs++;
+            } else if (REL[i].clasificacion == 'S') {
+                TNv++;
+                FNu++;
+                FPs++;
+            }
+        } else if (RFMC[i].clasificacion == 'S') {
+            if (REL[i].clasificacion == 'S') {
+                TNv++;
+                TNu++;
+                TPs++;
+            } else if (REL[i].clasificacion == 'V') {
+                FPv++;
+                TNu++;
+                FNs++;
+            } else if (REL[i].clasificacion == 'U') {
+                TNv++;
+                FPu++;
+                FNs++;
+            }
         }
     }
+
+    printf("Num v: %d %d %d %d\n", TPv, TNv, FPv, FNv);
+    printf("Num u: %d\n", TPu + TNu + FPu + FNu);
+    printf("Num s: %d\n", TPs + TNs + FPs + FNs);
+
+    //Realizar las formulas
+    //V
+    int d0 = TPv+FPv;
+    precisionV = TPv / d0;
+    double recallV = TPv / (TPv + FNv);
+
+    double accuracyV = (TPv + TNv) / (TPv + FPv + FNv + TNv);
+    double FmeasureV = 2 * (precisionV * recallV) / (precisionV + recallV);
+
+    printf("Precision V: %lf\n", precisionV);
+    printf("Precision V: %d\n", TPv);
+    printf("Precision V: %d\n", d0);
+    printf("Recall V: %.5lf\n", recallV);
+    printf("Accuracy V: %.5lf\n", accuracyV);
+    printf("Fmeasure V: %.5lf\n", FmeasureV);
 
 
 }

@@ -159,11 +159,11 @@ F1 = 2* (Precision*Recall)/(Precision+Recall)
 
 M 		A 		R
 V 		V 		TPv TNu TNs
-V 		U 		FNv FPu
-V 		S 		FNv FPs
-U 		V 		FPv FNu
-S 		V 		FPv FNs
-U  		U 		TPu TNv TNs
-S 		S 		TPs TNv TNu
-U 		S 		FPs FNu
-S 		U 		FPu FNu
+V 		U 		FNv FPu TNs
+V 		S 		FNv TNu FPs
+U 		V 		FPv FNu TNs
+U 		U 		TNv TPu TNS
+U  		S 		TNv FNu FPs
+S 		V 		FPv TNu FNs
+S 		U 		TNv FPu FNs
+S 		S 		TNv TNu TPs
