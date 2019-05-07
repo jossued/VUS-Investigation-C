@@ -135,35 +135,3 @@ d 	65.612	65.702	0.09	V -
 i 	65.702	65.852	0.15	V
 
 *Revisar la clasificación //Hecho
-
-Promedio logE: -1.402903940804701 
-Promedio Ink: 0.047813438131233
-Limite silencio 2*sqrt(prom(logE)): 2.440335740168392 
-Limite silencio? 3*sqrt(prom(logE)): 3.660503610252589 
-Limite respiración sqrt(4.5*prom(logE)): 2.588366925367445 
-
-*Prom logE abs =  1.488809631185804
-
-Fórmulas:
-True Positives: Positivos clasificados correctamene
-True Negatives: Negativos clasificados correctamente
-False Positive: clasificado como positivo, pero es un negativo
-False Negative: clasificado como negativo, pero es un positivo
-
-Precision = TP/(TP+FP) -> TP/Todos los positivos predichos
-Recall = TP/(TP+FN) -> P/Todos los positivos verdaderos
-
-Accuracy = (TP+TN)/(TP+FP+FN+TN)
-
-F1 = 2* (Precision*Recall)/(Precision+Recall)
-
-M 		A 		R
-V 		V 		TPv TNu TNs
-V 		U 		FNv FPu TNs
-V 		S 		FNv TNu FPs
-U 		V 		FPv FNu TNs
-U 		U 		TNv TPu TNS
-U  		S 		TNv FNu FPs
-S 		V 		FPv TNu FNs
-S 		U 		TNv FPu FNs
-S 		S 		TNv TNu TPs

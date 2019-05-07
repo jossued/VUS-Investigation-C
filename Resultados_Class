@@ -1,0 +1,158 @@
+Promedio logE: -1.402903940804701 
+Promedio Ink: 0.047813438131233
+Limite silencio 2*sqrt(prom(logE)): 2.440335740168392 
+Limite silencio? 3*sqrt(prom(logE)): 3.660503610252589 
+Limite respiración sqrt(4.5*prom(logE)): 2.588366925367445 
+
+*Prom logE abs =  1.488809631185804
+
+Fórmulas:
+True Positives: Positivos clasificados correctamene
+True Negatives: Negativos clasificados correctamente
+False Positive: clasificado como positivo, pero es un negativo
+False Negative: clasificado como negativo, pero es un positivo
+
+Precision = TP/(TP+FP) -> TP/Todos los positivos predichos
+Recall = TP/(TP+FN) -> P/Todos los positivos verdaderos
+
+Accuracy = (TP+TN)/(TP+FP+FN+TN)
+
+F1 = 2* (Precision*Recall)/(Precision+Recall)
+
+M 		A 		R
+V 		V 		TPv++ TNu++ TNs++ -
+V 		U 		FNv++ FPu++ TNs++ -
+V 		S 		FNv++ TNu++ FPs++ -
+U 		V 		FPv++ FNu++ TNs++ -
+U 		U 		TNv++ TPu++ TNs++ -
+U  		S 		TNv++ FNu++ FPs++ -
+S 		V 		FPv++ TNu++ FNs++ -
+S 		U 		TNv++ FPu++ FNs++
+S 		S 		TNv++ TNu++ TPs++ -
+
+
+#VUS
+V(456) U(281) S(79)
+V(0.558823529411765) U(0.344362745098039) S(0.096813725490196)
+
+Precision V: 0.800000
+Recall V: 0.96491
+Accuracy V: 0.84559
+Fmeasure V: 0.87475
+
+Precision U: 0.847619
+Recall U: 0.31673
+Accuracy U: 0.74510
+Fmeasure U: 0.46114
+
+Precision S: 0.490683
+Recall S: 1.00000
+Accuracy S: 0.89951
+Fmeasure S: 0.65833
+
+Cambiando límite del silencio
+3.5 * sqrt(promLogE)
+
+Precision V: 0.800000
+Recall V: 0.96491
+Accuracy V: 0.84559
+Fmeasure V: 0.87475
+
+Precision U: 0.912568
+Recall U: 0.59431
+Accuracy U: 0.84069
+Fmeasure U: 0.71983
+
+Precision S: 0.951807
+Recall S: 1.00000
+Accuracy S: 0.99510
+Fmeasure S: 0.97531
+
+Cambiando límite del silencio
+4 * sqrt(promLogE)
+
+Precision V: 0.800000
+Recall V: 0.96491
+Accuracy V: 0.84559
+Fmeasure V: 0.87475
+
+Precision U: 0.914439
+Recall U: 0.60854
+Accuracy U: 0.84559
+Fmeasure U: 0.73077
+
+Precision S: 1.000000
+Recall S: 1.00000
+Accuracy S: 1.00000
+Fmeasure S: 1.00000
+
+Cambiando límite de VU
+0.9 promLogE
+
+Precision V: 0.821293
+Recall V: 0.94737
+Accuracy V: 0.85539
+Fmeasure V: 0.87984
+
+Precision U: 0.886256
+Recall U: 0.66548
+Accuracy U: 0.85539
+Fmeasure U: 0.76016
+
+Precision T: 0.860965
+Recall T: 0.85539
+Accuracy T: 0.86939
+Fmeasure T: 0.85817
+
+Cambiando límite de VU
+0.8 promLogE
+
+Precision V: 0.831068
+Recall V: 0.93860
+Accuracy V: 0.85907
+Fmeasure V: 0.88157
+
+Precision U: 0.873874
+Recall U: 0.69039
+Accuracy U: 0.85907
+Fmeasure U: 0.77137
+
+Precision T: 0.862164
+Recall T: 0.85907
+Accuracy T: 0.87271
+Fmeasure T: 0.86061
+
+Cambiando límite de VU
+0.7 promLogE
+
+Precision V: 0.847390
+Recall V: 0.92544
+Accuracy V: 0.86520
+Fmeasure V: 0.88470
+
+Precision U: 0.857741
+Recall U: 0.72954
+Accuracy U: 0.86520
+Fmeasure U: 0.78846
+
+Precision T: 0.865729
+Recall T: 0.86520
+Accuracy T: 0.87825
+Fmeasure T: 0.86546
+
+0.5 promLogE
+Precision V: 0.884701
+Recall V: 0.87500
+Accuracy V: 0.86642
+Fmeasure V: 0.87982
+Precision U: 0.800699
+Recall U: 0.81495
+Accuracy U: 0.86642
+Fmeasure U: 0.80776
+
+Precision T: 0.866936
+Recall T: 0.86642
+Accuracy T: 0.87935
+Fmeasure T: 0.86668
+
+*Quitar los silencios para hacer la casificación del Ink

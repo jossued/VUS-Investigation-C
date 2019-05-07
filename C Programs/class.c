@@ -72,6 +72,7 @@ void EscribirClasificacionFrames(FramesClassifStruct *RFC) {
     FILE *outfile;
     outfile = fopen(FICHEROFRAMES, "w");
 
+
     char src[100];
     if (outfile == NULL) {
         fprintf(stderr, "\nError abriendo archivo\n");
@@ -80,11 +81,12 @@ void EscribirClasificacionFrames(FramesClassifStruct *RFC) {
 
         for (int i = 0; i < FRAMES; ++i) {
             fprintf(outfile, "%d\t%c\n", RFC[i].frame + 1, RFC[i].clasificacion);
+
         }
 
-        if (fwrite != 0)
+        if (fwrite != 0) {
             printf("contents to file written successfully !\n");
-        else
+        } else
             printf("error writing file !\n");
 
         // close file
@@ -296,10 +298,13 @@ void ResultadosClassEnergia(FramesLogStruct *REL, FramesClassifStruct *RFMC) {
     int FPs = 0;
     int FNs = 0;
 
-    double precisionV = 0.0;
+    int classifV = 0;
+    int classifU = 0;
+    int classifS = 0;
 
     for (int i = 0; i < FRAMES; ++i) {
         if (RFMC[i].clasificacion == 'V') {
+            classifV++;
             if (REL[i].clasificacion == 'V') {
                 TPv++;
                 TNu++;
@@ -314,6 +319,7 @@ void ResultadosClassEnergia(FramesLogStruct *REL, FramesClassifStruct *RFMC) {
                 FPs++;
             }
         } else if (RFMC[i].clasificacion == 'U') {
+            classifU++;
             if (REL[i].clasificacion == 'U') {
                 TPu++;
                 TNv++;
@@ -328,6 +334,7 @@ void ResultadosClassEnergia(FramesLogStruct *REL, FramesClassifStruct *RFMC) {
                 FPs++;
             }
         } else if (RFMC[i].clasificacion == 'S') {
+            classifS++;
             if (REL[i].clasificacion == 'S') {
                 TNv++;
                 TNu++;
@@ -344,26 +351,64 @@ void ResultadosClassEnergia(FramesLogStruct *REL, FramesClassifStruct *RFMC) {
         }
     }
 
+    printf("\nV(%d) U(%d) S(%d)\n", classifV, classifU, classifS);
+    double percentV = (double) classifV / (double) FRAMES;
+    double percentU = (double) classifU / (double) FRAMES;
+    double percentS = (double) classifS / (double) FRAMES;
+
+    printf("V(%.15lf) U(%.15lf) S(%.15lf)\n", percentV, percentU, percentS);
+/*
     printf("Num v: %d %d %d %d\n", TPv, TNv, FPv, FNv);
     printf("Num u: %d\n", TPu + TNu + FPu + FNu);
     printf("Num s: %d\n", TPs + TNs + FPs + FNs);
-
+*/
     //Realizar las formulas
     //V
-    int d0 = TPv+FPv;
-    precisionV = TPv / d0;
-    double recallV = TPv / (TPv + FNv);
+    double precisionV = (double) TPv / (double) (TPv + FPv);
+    double recallV = (double) TPv / (double) (TPv + FNv);
 
-    double accuracyV = (TPv + TNv) / (TPv + FPv + FNv + TNv);
+    double accuracyV = (double) (TPv + TNv) / (double) (TPv + FPv + FNv + TNv);
     double FmeasureV = 2 * (precisionV * recallV) / (precisionV + recallV);
 
     printf("Precision V: %lf\n", precisionV);
-    printf("Precision V: %d\n", TPv);
-    printf("Precision V: %d\n", d0);
     printf("Recall V: %.5lf\n", recallV);
     printf("Accuracy V: %.5lf\n", accuracyV);
     printf("Fmeasure V: %.5lf\n", FmeasureV);
+    //U
+    double precisionU = (double) TPu / (double) (TPu + FPu);
+    double recallU = (double) TPu / (double) (TPu + FNu);
 
+    double accuracyU = (double) (TPu + TNu) / (double) (TPu + FPu + FNu + TNu);
+    double FmeasureU = 2 * (precisionU * recallU) / (precisionU + recallU);
+
+    printf("Precision U: %lf\n", precisionU);
+    printf("Recall U: %.5lf\n", recallU);
+    printf("Accuracy U: %.5lf\n", accuracyU);
+    printf("Fmeasure U: %.5lf\n", FmeasureU);
+    //S
+    double precisionS = (double) TPs / (double) (TPs + FPs);
+    double recallS = (double) TPs / (double) (TPs + FNs);
+
+    double accuracyS = (double) (TPs + TNs) / (double) (TPs + FPs + FNs + TNs);
+    double FmeasureS = 2 * (precisionS * recallS) / (precisionS + recallS);
+
+    printf("Precision S: %lf\n", precisionS);
+    printf("Recall S: %.5lf\n", recallS);
+    printf("Accuracy S: %.5lf\n", accuracyS);
+    printf("Fmeasure S: %.5lf\n", FmeasureS);
+
+    //TOTAL?
+
+    double precisionT = precisionV * percentV + precisionU * percentU + precisionS * percentS;
+    double recallT = recallV * percentV + recallU * percentU + recallS * percentS;
+
+    double accuracyT = accuracyV * percentV + accuracyU * percentU + accuracyS * percentS;
+    double FmeasureT = 2 * (precisionT * recallT) / (precisionT + recallT);
+
+    printf("Precision T: %lf\n", precisionT);
+    printf("Recall T: %.5lf\n", recallT);
+    printf("Accuracy T: %.5lf\n", accuracyT);
+    printf("Fmeasure T: %.5lf\n", FmeasureT);
 
 }
 
@@ -389,7 +434,9 @@ int main(void) {
     leerEnergiaLog(RENERGYLOG);
 
     ClasificarVUSEnergia(RLIMS, RENERGYLOG);
+
     ResultadosClassEnergia(RENERGYLOG, RFMANUALCLASSIF);
+    //ResultadosClassInk(RENERGYLOG, RFMANUALCLASSIF);
 
     return 0;
 }

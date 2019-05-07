@@ -290,7 +290,7 @@ void calcularInk(amplitudes *RA, FramesStruct *RF) {
 void establecerLimites(ThresholdsStruct *RT, double promLogE, double promLogI) {
     printf("Promedio logE: %.15lf \n", promLogE);
     strcpy(RT[0].tipo, "Eu");
-    RT[0].threshold = promLogE;
+    RT[0].threshold = 0.5*promLogE;
 
     double limSilencio = 0;
     double limRespiracion = 0;
@@ -298,11 +298,11 @@ void establecerLimites(ThresholdsStruct *RT, double promLogE, double promLogI) {
     if (promLogE < -1) {
         promLogE = fabs(promLogE);
 
-        limSilencio = -1 * 2 * sqrt(promLogE);
+        limSilencio = -1 * 4 * sqrt(promLogE);
         limRespiracion = -1 * sqrt(4.5 * promLogE);
 
     } else {
-        limSilencio = 2 * sqrt(promLogE);
+        limSilencio = 4 * sqrt(promLogE);
         limRespiracion = sqrt(4.5 * promLogE);
     }
 
