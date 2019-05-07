@@ -11,7 +11,6 @@
 
 #define ELEMENTS 130560
 const int FRAMES = ELEMENTS / 160;
-#define NUMTHRESHOLDS 4
 
 #define FICHEROAMP "o1_201704121431_svu.dat"
 #define FICHERONORM "norm_svu.txt"
@@ -20,7 +19,7 @@ const int FRAMES = ELEMENTS / 160;
 #define RESULTADOSEL    "frame_energy_log.dat"
 #define RESULTADOSI     "frame_ink.dat"
 #define RESULTADOSIL    "frame_ink_log.dat"
-#define FICEHROLIM      "limites.dat"
+#define FICEHROPROM     "promedios.dat"
 //#define numThreads 2
 
 typedef struct _amplitudes {
@@ -37,11 +36,6 @@ typedef struct _frames {
     double ink;
     double ink_log;
 } FramesStruct;
-
-typedef struct _thresholds {
-    char tipo[2];
-    double threshold;
-} ThresholdsStruct;
 
 void leerDatos(amplitudes *R) {
 
@@ -219,19 +213,16 @@ double escribirStructLog(FramesStruct *RF, int band) {
     }
 }
 
-void escribirLimites(ThresholdsStruct *RT) {
+void escribirPromedios(double Pe, double Pi) {
     FILE *outfile;
-    outfile = fopen(FICEHROLIM, "w");
+    outfile = fopen(FICEHROPROM, "w");
 
     if (outfile == NULL) {
         fprintf(stderr, "\nError abriendo archivo\n");
         exit(1);
     } else {
-        // write struct to file
-        for (int i = 0; i < NUMTHRESHOLDS-1; ++i) {
-            fprintf(outfile, "%s\t%.15lf\n", RT[i].tipo, RT[i].threshold);
-        }
-        fprintf(outfile, "%s\t%.15lf", RT[NUMTHRESHOLDS-1].tipo, RT[NUMTHRESHOLDS-1].threshold);
+        fprintf(outfile, "PE\t%.15lf\n", Pe);
+        fprintf(outfile, "PI\t%.15lf", Pi);
         if (fwrite != 0)
             printf("Escritura en archivo!\n");
         else
@@ -287,41 +278,6 @@ void calcularInk(amplitudes *RA, FramesStruct *RF) {
     }
 }
 
-void establecerLimites(ThresholdsStruct *RT, double promLogE, double promLogI) {
-    printf("Promedio logE: %.15lf \n", promLogE);
-    strcpy(RT[0].tipo, "Eu");
-    RT[0].threshold = 0.5*promLogE;
-
-    double limSilencio = 0;
-    double limRespiracion = 0;
-
-    if (promLogE < -1) {
-        promLogE = fabs(promLogE);
-
-        limSilencio = -1 * 4 * sqrt(promLogE);
-        limRespiracion = -1 * sqrt(4.5 * promLogE);
-
-    } else {
-        limSilencio = 4 * sqrt(promLogE);
-        limRespiracion = sqrt(4.5 * promLogE);
-    }
-
-    printf("Limite silencio 2*sqrt(prom(logE)): %.15lf \n", limSilencio);
-    printf("Mejor limite silencio? 3*sqrt(prom(logE)): %.15lf \n", -1 * 3 * sqrt(promLogE));
-    printf("Limite respiración sqrt(4.5*prom(logE)): %.15lf \n", limRespiracion);
-
-    strcpy(RT[1].tipo, "Ed");
-    RT[1].threshold = limSilencio;
-    strcpy(RT[2].tipo, "Er");
-    RT[2].threshold = limRespiracion;
-
-    printf("Promedio Ink: %.15lf \n", promLogI);
-
-    strcpy(RT[3].tipo, "I ");
-    RT[3].threshold = promLogI;
-
-}
-
 
 int main(void) {
 
@@ -342,9 +298,7 @@ int main(void) {
     escribirStruct(RFRAMES, 1); //1 -> Ink
     double promedio_logI = escribirStructLog(RFRAMES, 1); //1 -> Ink
 
-    ThresholdsStruct RTHRESHOLDS[NUMTHRESHOLDS];
-    establecerLimites(RTHRESHOLDS, promedio_logE, promedio_logI);
-    escribirLimites(RTHRESHOLDS);
+    escribirPromedios(promedio_logE, promedio_logI);
     return 0;
 
 }

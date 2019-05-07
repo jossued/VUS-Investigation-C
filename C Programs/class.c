@@ -11,9 +11,13 @@
 #define NUMPHONEMS 90
 #define FICHEROINTERVALOS "manual_class.dat"
 #define FICHEROINTERVALOS0 "manual_class_0.dat"
-#define FICHEROFRAMES "manual_class_frames.dat"
-#define FICHEROLIM  "limites.dat"
-#define FICHEROENERGYLOG  "frame_energy_log.dat"
+#define FICHEROFRAMES   "manual_class_frames.dat"
+
+#define FICHEROLIM      "limites.dat"
+#define FICHEROPROMS    "promedios.dat"
+
+#define FICHEROENERGYLOG    "frame_energy_log.dat"
+#define FICHEROINKLOG       "frame_ink_log.dat"
 
 #define ELEMENTS 130560
 const int FRAMES = ELEMENTS / 160;
@@ -62,6 +66,30 @@ void EscribirClasificacionManual(IntervalsStruct *RI) {
             printf("contents to file written successfully !\n");
         else
             printf("error writing file !\n");
+
+        // close file
+        fclose(outfile);
+    }
+}
+
+
+void escribirLimites(ThresholdsStruct *RT) {
+    FILE *outfile;
+    outfile = fopen(FICHEROLIM, "w");
+
+    if (outfile == NULL) {
+        fprintf(stderr, "\nError abriendo archivo\n");
+        exit(1);
+    } else {
+        // write struct to file
+        for (int i = 0; i < NUMTHRESHOLDS - 1; ++i) {
+            fprintf(outfile, "%s\t%.15lf\n", RT[i].tipo, RT[i].threshold);
+        }
+        fprintf(outfile, "%s\t%.15lf", RT[NUMTHRESHOLDS - 1].tipo, RT[NUMTHRESHOLDS - 1].threshold);
+        if (fwrite != 0)
+            printf("Escritura en archivo!\n");
+        else
+            printf("error escribiendo archivo!\n");
 
         // close file
         fclose(outfile);
@@ -195,9 +223,9 @@ void SepararIntervalos(IntervalsStruct *RI, FramesClassifStruct *RFC) {
 }
 
 
-void leerLimites(ThresholdsStruct *RT) {
+void leerPromedios(ThresholdsStruct *RT) {
     printf("Entro a leerDatos\n");
-    FILE *file = fopen(FICHEROLIM, "r");
+    FILE *file = fopen(FICHEROPROMS, "r");
 
     char strA[20] = {};
     int i = 0;
@@ -227,9 +255,16 @@ void leerLimites(ThresholdsStruct *RT) {
     }
 }
 
-void leerEnergiaLog(FramesLogStruct *RFL) {
+void leerFicheroLog(FramesLogStruct *RFL, int band) {
     printf("Entro a leerDatos\n");
-    FILE *file = fopen(FICHEROENERGYLOG, "r");
+
+    FILE *file;
+
+    if (band == 0) {
+        file = fopen(FICHEROENERGYLOG, "r");
+    } else if (band == 1) {
+        file = fopen(FICHEROINKLOG, "r");
+    }
 
     char strA[20] = {};
     int i = 0;
@@ -261,28 +296,39 @@ void leerEnergiaLog(FramesLogStruct *RFL) {
     }
 }
 
-void ClasificarVUSEnergia(ThresholdsStruct *RL, FramesLogStruct *REL) {
+void ClasificarVUS(ThresholdsStruct *RL, FramesLogStruct *REL, int band) {
 
-    for (int i = 0; i < FRAMES; ++i) {
+    if (band == 0) {
+        for (int i = 0; i < FRAMES; ++i) {
 //        printf("%lf > %lf\n", REL[i].log_val, RL[0].threshold );
-        if (REL[i].log_val > RL[0].threshold) {
+            if (REL[i].log_val > RL[0].threshold) {
 //            printf("%lf > %lf\n", REL[i].log_val, RL[0].threshold );
 //            strcpy(REL[i].clasificacion, "V");
-            REL[i].clasificacion = 'V';
+                REL[i].clasificacion = 'V';
 
-        } else if (REL[i].log_val < RL[0].threshold && REL[i].log_val > RL[1].threshold) {
+            } else if (REL[i].log_val < RL[0].threshold && REL[i].log_val > RL[1].threshold) {
 //            strcpy(REL[i].clasificacion, 'U');
-            REL[i].clasificacion = 'U';
-        } else if (REL[i].log_val < RL[1].threshold) {
+                REL[i].clasificacion = 'U';
+            } else if (REL[i].log_val < RL[1].threshold) {
 //            strcpy(REL[i].clasificacion, 'S');
-            REL[i].clasificacion = 'S';
-        }
+                REL[i].clasificacion = 'S';
+            }
 //        printf("%d\t%c\n", REL[i].frame,REL[i].clasificacion);
+        }
+    } else if (band == 1) {
+        for (int i = 0; i < FRAMES; ++i) {
+            if (REL[i].log_val > RL[3].threshold) {
+                REL[i].clasificacion = 'U';
+            } else if (REL[i].log_val < RL[3].threshold) {
+                REL[i].clasificacion = 'V';
+            }
+//            printf("%d\t%c\n", REL[i].frame, REL[i].clasificacion);
+        }
     }
 
 }
 
-void ResultadosClassEnergia(FramesLogStruct *REL, FramesClassifStruct *RFMC) {
+void ResultadosClassEnergia(FramesLogStruct *REL, FramesClassifStruct *RFMC, FramesLogStruct *RIL, int band) {
     int TPv = 0;
     int TNv = 0;
     int FPv = 0;
@@ -302,54 +348,88 @@ void ResultadosClassEnergia(FramesLogStruct *REL, FramesClassifStruct *RFMC) {
     int classifU = 0;
     int classifS = 0;
 
-    for (int i = 0; i < FRAMES; ++i) {
-        if (RFMC[i].clasificacion == 'V') {
-            classifV++;
-            if (REL[i].clasificacion == 'V') {
-                TPv++;
-                TNu++;
-                TNs++;
-            } else if (REL[i].clasificacion == 'U') {
-                FNv++;
-                FPu++;
-                TNs++;
-            } else if (REL[i].clasificacion == 'S') {
-                FNv++;
-                TNu++;
-                FPs++;
+    if (band == 0) {
+        for (int i = 0; i < FRAMES; ++i) {
+            if (RFMC[i].clasificacion == 'V') {
+                classifV++;
+                if (REL[i].clasificacion == 'V') {
+                    TPv++;
+                    TNu++;
+                    TNs++;
+                } else if (REL[i].clasificacion == 'U') {
+                    FNv++;
+                    FPu++;
+                    TNs++;
+                } else if (REL[i].clasificacion == 'S') {
+                    FNv++;
+                    TNu++;
+                    FPs++;
+                }
+            } else if (RFMC[i].clasificacion == 'U') {
+                classifU++;
+                if (REL[i].clasificacion == 'U') {
+                    TPu++;
+                    TNv++;
+                    TNs++;
+                } else if (REL[i].clasificacion == 'V') {
+                    FPv++;
+                    FNu++;
+                    TNs++;
+                } else if (REL[i].clasificacion == 'S') {
+                    TNv++;
+                    FNu++;
+                    FPs++;
+                }
+            } else if (RFMC[i].clasificacion == 'S') {
+                classifS++;
+                if (REL[i].clasificacion == 'S') {
+                    TNv++;
+                    TNu++;
+                    TPs++;
+                } else if (REL[i].clasificacion == 'V') {
+                    FPv++;
+                    TNu++;
+                    FNs++;
+                } else if (REL[i].clasificacion == 'U') {
+                    TNv++;
+                    FPu++;
+                    FNs++;
+                }
             }
-        } else if (RFMC[i].clasificacion == 'U') {
-            classifU++;
-            if (REL[i].clasificacion == 'U') {
-                TPu++;
-                TNv++;
-                TNs++;
-            } else if (REL[i].clasificacion == 'V') {
-                FPv++;
-                FNu++;
-                TNs++;
-            } else if (REL[i].clasificacion == 'S') {
-                TNv++;
-                FNu++;
-                FPs++;
-            }
-        } else if (RFMC[i].clasificacion == 'S') {
-            classifS++;
-            if (REL[i].clasificacion == 'S') {
-                TNv++;
-                TNu++;
-                TPs++;
-            } else if (REL[i].clasificacion == 'V') {
-                FPv++;
-                TNu++;
-                FNs++;
-            } else if (REL[i].clasificacion == 'U') {
-                TNv++;
-                FPu++;
-                FNs++;
+        }
+    } else if (band == 1) {
+        for (int i = 0; i < FRAMES; ++i) {
+            if (RFMC[i].clasificacion == 'V') {
+                classifV++;
+                if (REL[i].clasificacion == 'V' && RIL[i].clasificacion == 'V') {
+                    TPv++;
+                    TNu++;
+                } else if (REL[i].clasificacion == 'U' && RIL[i].clasificacion == 'U') {
+                    FNv++;
+                    FPu++;
+                }
+            } else if (RFMC[i].clasificacion == 'U') {
+                classifU++;
+                if (REL[i].clasificacion == 'U' && RIL[i].clasificacion == 'U') {
+                    TPu++;
+                    TNv++;
+                } else if (REL[i].clasificacion == 'V' && RIL[i].clasificacion == 'V') {
+                    FPv++;
+                    FNu++;
+                }
+            } else if (RFMC[i].clasificacion == 'S') {
+                classifS++;
+                if (REL[i].clasificacion == 'V' && RIL[i].clasificacion == 'V') {
+                    FPv++;
+                    TNu++;
+                } else if (REL[i].clasificacion == 'U' && RIL[i].clasificacion == 'U') {
+                    TNv++;
+                    FPu++;
+                }
             }
         }
     }
+
 
     printf("\nV(%d) U(%d) S(%d)\n", classifV, classifU, classifS);
     double percentV = (double) classifV / (double) FRAMES;
@@ -385,30 +465,180 @@ void ResultadosClassEnergia(FramesLogStruct *REL, FramesClassifStruct *RFMC) {
     printf("Recall U: %.5lf\n", recallU);
     printf("Accuracy U: %.5lf\n", accuracyU);
     printf("Fmeasure U: %.5lf\n", FmeasureU);
-    //S
-    double precisionS = (double) TPs / (double) (TPs + FPs);
-    double recallS = (double) TPs / (double) (TPs + FNs);
 
-    double accuracyS = (double) (TPs + TNs) / (double) (TPs + FPs + FNs + TNs);
-    double FmeasureS = 2 * (precisionS * recallS) / (precisionS + recallS);
+    double precisionT = 0.0;
+    double recallT = 0.0;
 
-    printf("Precision S: %lf\n", precisionS);
-    printf("Recall S: %.5lf\n", recallS);
-    printf("Accuracy S: %.5lf\n", accuracyS);
-    printf("Fmeasure S: %.5lf\n", FmeasureS);
+    double accuracyT = 0.0;
 
-    //TOTAL?
+    if (band == 0) {
+        //S
+        double precisionS = (double) TPs / (double) (TPs + FPs);
+        double recallS = (double) TPs / (double) (TPs + FNs);
 
-    double precisionT = precisionV * percentV + precisionU * percentU + precisionS * percentS;
-    double recallT = recallV * percentV + recallU * percentU + recallS * percentS;
+        double accuracyS = (double) (TPs + TNs) / (double) (TPs + FPs + FNs + TNs);
+        double FmeasureS = 2 * (precisionS * recallS) / (precisionS + recallS);
 
-    double accuracyT = accuracyV * percentV + accuracyU * percentU + accuracyS * percentS;
+        printf("Precision S: %lf\n", precisionS);
+        printf("Recall S: %.5lf\n", recallS);
+        printf("Accuracy S: %.5lf\n", accuracyS);
+        printf("Fmeasure S: %.5lf\n", FmeasureS);
+
+        //TOTAL?
+
+        precisionT = precisionV * percentV + precisionU * percentU + precisionS * percentS;
+        recallT = recallV * percentV + recallU * percentU + recallS * percentS;
+
+        accuracyT = accuracyV * percentV + accuracyU * percentU + accuracyS * percentS;
+    } else if (band == 1) {
+        //TOTAL?
+
+        precisionT = precisionV * percentV + precisionU * percentU;
+        recallT = recallV * percentV + recallU * percentU;
+
+        accuracyT = accuracyV * percentV + accuracyU * percentU;
+    }
+
     double FmeasureT = 2 * (precisionT * recallT) / (precisionT + recallT);
 
     printf("Precision T: %lf\n", precisionT);
     printf("Recall T: %.5lf\n", recallT);
     printf("Accuracy T: %.5lf\n", accuracyT);
     printf("Fmeasure T: %.5lf\n", FmeasureT);
+
+}
+
+void ResultadosClassInk(FramesLogStruct *REL, FramesClassifStruct *RFMC) {
+    int TPv = 0;
+    int TNv = 0;
+    int FPv = 0;
+    int FNv = 0;
+
+    int TPu = 0;
+    int TNu = 0;
+    int FPu = 0;
+    int FNu = 0;
+
+    int classifV = 0;
+    int classifU = 0;
+
+    for (int i = 0; i < FRAMES; ++i) {
+        if (RFMC[i].clasificacion == 'V') {
+            classifV++;
+            if (REL[i].clasificacion == 'V') {
+                TPv++;
+                TNu++;
+            } else if (REL[i].clasificacion == 'U') {
+                FNv++;
+                FPu++;
+            }
+        } else if (RFMC[i].clasificacion == 'U') {
+            classifU++;
+            if (REL[i].clasificacion == 'U') {
+                TPu++;
+                TNv++;
+            } else if (REL[i].clasificacion == 'V') {
+                FPv++;
+                FNu++;
+            }
+        }
+    }
+
+    printf("\nV(%d) U(%d)\n", classifV, classifU);
+    double percentV = (double) classifV / (double) FRAMES;
+    double percentU = (double) classifU / (double) FRAMES;
+
+    printf("V(%.15lf) U(%.15lf)\n", percentV, percentU);
+/*
+    printf("Num v: %d %d %d %d\n", TPv, TNv, FPv, FNv);
+    printf("Num u: %d\n", TPu + TNu + FPu + FNu);
+    printf("Num s: %d\n", TPs + TNs + FPs + FNs);
+*/
+    //Realizar las formulas
+    //V
+    double precisionV = (double) TPv / (double) (TPv + FPv);
+    double recallV = (double) TPv / (double) (TPv + FNv);
+
+    double accuracyV = (double) (TPv + TNv) / (double) (TPv + FPv + FNv + TNv);
+    double FmeasureV = 2 * (precisionV * recallV) / (precisionV + recallV);
+
+    printf("Precision V: %lf\n", precisionV);
+    printf("Recall V: %.5lf\n", recallV);
+    printf("Accuracy V: %.5lf\n", accuracyV);
+    printf("Fmeasure V: %.5lf\n", FmeasureV);
+    //U
+    double precisionU = (double) TPu / (double) (TPu + FPu);
+    double recallU = (double) TPu / (double) (TPu + FNu);
+
+    double accuracyU = (double) (TPu + TNu) / (double) (TPu + FPu + FNu + TNu);
+    double FmeasureU = 2 * (precisionU * recallU) / (precisionU + recallU);
+
+    printf("Precision U: %lf\n", precisionU);
+    printf("Recall U: %.5lf\n", recallU);
+    printf("Accuracy U: %.5lf\n", accuracyU);
+    printf("Fmeasure U: %.5lf\n", FmeasureU);
+
+    //TOTAL?
+
+    double precisionT = precisionV * percentV + precisionU * percentU;
+    double recallT = recallV * percentV + recallU * percentU;
+
+    double accuracyT = accuracyV * percentV + accuracyU * percentU;
+    double FmeasureT = 2 * (precisionT * recallT) / (precisionT + recallT);
+
+    printf("Precision T: %lf\n", precisionT);
+    printf("Recall T: %.5lf\n", recallT);
+    printf("Accuracy T: %.5lf\n", accuracyT);
+    printf("Fmeasure T: %.5lf\n", FmeasureT);
+
+
+}
+
+
+void establecerLimites(ThresholdsStruct *RT, double promLogE, double promLogI) {
+
+    /*
+     * Límites establecidos por el autor:
+     *
+     * Energía V-U -> promLogE
+     * Energía U-S -> 2*sqrt(prom(logE))
+     * Energía Respiración -> sqrt(4.5 * promLogE)
+     *
+     * Ink V-U -> promLogI
+     *
+     */
+
+    printf("Promedio logE: %.15lf \n", promLogE);
+    strcpy(RT[0].tipo, "Eu");
+    RT[0].threshold = promLogE;
+
+    double limSilencio = 0;
+    double limRespiracion = 0;
+
+    if (promLogE < -1) {
+        promLogE = fabs(promLogE);
+
+        limSilencio = -1 * 2 * sqrt(promLogE);
+        limRespiracion = -1 * sqrt(4.5 * promLogE);
+
+    } else {
+        limSilencio = 2 * sqrt(promLogE);
+        limRespiracion = sqrt(4.5 * promLogE);
+    }
+
+    printf("Limite silencio 2*sqrt(prom(logE)): %.15lf \n", limSilencio);
+    printf("Mejor limite silencio? 3*sqrt(prom(logE)): %.15lf \n", -1 * 3 * sqrt(promLogE));
+    printf("Limite respiración sqrt(4.5*prom(logE)): %.15lf \n", limRespiracion);
+
+    strcpy(RT[1].tipo, "Ed");
+    RT[1].threshold = limSilencio;
+    strcpy(RT[2].tipo, "Er");
+    RT[2].threshold = limRespiracion;
+
+    printf("Promedio Ink: %.15lf \n", promLogI);
+
+    strcpy(RT[3].tipo, "I ");
+    RT[3].threshold = promLogI;
 
 }
 
@@ -427,16 +657,33 @@ int main(void) {
 
     //Clasificacion Energia
     ThresholdsStruct RLIMS[NUMTHRESHOLDS];
-    FramesClassifStruct RFENERGYCLASSIF[FRAMES];
+    ThresholdsStruct RPROMS[2];
     FramesLogStruct RENERGYLOG[FRAMES];
 
-    leerLimites(RLIMS);
-    leerEnergiaLog(RENERGYLOG);
+    leerPromedios(RPROMS);
 
-    ClasificarVUSEnergia(RLIMS, RENERGYLOG);
+//    printf("\n%.15lf %.15lf\n", RPROMS[0].threshold, RPROMS[1].threshold);
+    establecerLimites(RLIMS, RPROMS[0].threshold, RPROMS[1].threshold);
 
-    ResultadosClassEnergia(RENERGYLOG, RFMANUALCLASSIF);
-    //ResultadosClassInk(RENERGYLOG, RFMANUALCLASSIF);
+    leerFicheroLog(RENERGYLOG, 0); //0 Energia
+
+    ClasificarVUS(RLIMS, RENERGYLOG, 0); //0 Energia
+
+    FramesLogStruct RINKLOG[FRAMES];
+
+    ResultadosClassEnergia(RENERGYLOG, RFMANUALCLASSIF, RINKLOG, 0); //0 No usar Ink
+
+    //Clasificacion Ink
+
+    leerFicheroLog(RINKLOG, 1); //1 Ink
+
+    ClasificarVUS(RLIMS, RINKLOG, 1); //1 Ink
+
+    ResultadosClassInk(RINKLOG, RFMANUALCLASSIF);
+
+    //Clasificación Intervalos sin incertidumbre
+    ResultadosClassEnergia(RENERGYLOG, RFMANUALCLASSIF, RINKLOG, 1); //1 Considerando Ink
+
 
     return 0;
 }

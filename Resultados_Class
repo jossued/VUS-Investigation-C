@@ -19,6 +19,8 @@ Accuracy = (TP+TN)/(TP+FP+FN+TN)
 
 F1 = 2* (Precision*Recall)/(Precision+Recall)
 
+Clasificación Energía
+
 M 		A 		R
 V 		V 		TPv++ TNu++ TNs++ -
 V 		U 		FNv++ FPu++ TNs++ -
@@ -35,6 +37,8 @@ S 		S 		TNv++ TNu++ TPs++ -
 V(456) U(281) S(79)
 V(0.558823529411765) U(0.344362745098039) S(0.096813725490196)
 
+Límites del autor:
+
 Precision V: 0.800000
 Recall V: 0.96491
 Accuracy V: 0.84559
@@ -49,6 +53,12 @@ Precision S: 0.490683
 Recall S: 1.00000
 Accuracy S: 0.89951
 Fmeasure S: 0.65833
+
+Precision T: 0.786452
+Recall T: 0.74510
+Accuracy T: 0.81620
+Fmeasure T: 0.76522
+
 
 Cambiando límite del silencio
 3.5 * sqrt(promLogE)
@@ -156,3 +166,71 @@ Accuracy T: 0.87935
 Fmeasure T: 0.86668
 
 *Quitar los silencios para hacer la casificación del Ink
+
+
+
+Clasificación Ink
+
+M 		A 		R
+V 		V 		TPv++ TNu++
+V 		U 		FNv++ FPu++
+U 		V 		FPv++ FNu++
+U 		U 		TNv++ TPu++
+
+Límite del autor:
+PromLogI
+Precision V: 0.602823
+Recall V: 0.65570
+Accuracy V: 0.51967
+Fmeasure V: 0.62815
+Precision U: 0.348548
+Recall U: 0.29893
+Accuracy U: 0.51967
+Fmeasure U: 0.32184
+Precision T: 0.456898
+Recall T: 0.46936
+Accuracy T: 0.46936
+Fmeasure T: 0.46305
+
+0.5 PromLogI
+Precision V: 0.605568
+Recall V: 0.57237
+Accuracy V: 0.50475
+Fmeasure V: 0.58850
+Precision U: 0.362745
+Recall U: 0.39502
+Accuracy U: 0.50475
+Fmeasure U: 0.37819
+Precision T: 0.463322
+Recall T: 0.45588
+Accuracy T: 0.45588
+Fmeasure T: 0.45957
+
+2 PromLogI
+Precision V: 0.612903
+Recall V: 0.79167
+Accuracy V: 0.56174
+Fmeasure V: 0.69091
+Precision U: 0.358108
+Recall U: 0.18861
+Accuracy U: 0.56174
+Fmeasure U: 0.24709
+Precision T: 0.465824
+Recall T: 0.50735
+Accuracy T: 0.50735
+Fmeasure T: 0.48570
+
+//Separados los intervalos de certidumbre
+Precision V: 0.807163
+Recall V: 0.96700
+Accuracy V: 0.80000
+Fmeasure V: 0.87988
+Precision U: 0.729730
+Recall U: 0.27835
+Accuracy U: 0.80000
+Fmeasure U: 0.40299
+Precision T: 0.702353
+Recall T: 0.63623
+Accuracy T: 0.72255
+Fmeasure T: 0.66766
+
