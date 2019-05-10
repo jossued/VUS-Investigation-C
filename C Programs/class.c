@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <stdbool.h>
 
 #define NUMTHRESHOLDS 5
 #define NUMPHONEMS 90
@@ -18,6 +19,8 @@
 
 #define FICHEROENERGYLOG    "frame_energy_log.dat"
 #define FICHEROINKLOG       "frame_ink_log.dat"
+
+#define FICHEROERROR    "frame_error_log.dat"
 
 #define ELEMENTS 130560
 const int FRAMES = ELEMENTS / 160;
@@ -165,6 +168,34 @@ void EscribirClasificacionFramesNum(FramesLogClassifStruct *RFC, char *str, Fram
     }
 }
 
+void EscribirErrorEnergyFrames(ThresholdsStruct *RLIM, FramesLogClassifStruct *RERR, FramesLogClassifStruct *RCE, int band) {
+    FILE *outfile;
+    outfile = fopen(FICHEROERROR, "w");
+
+
+    char src[100];
+    if (outfile == NULL) {
+        fprintf(stderr, "\nError abriendo archivo\n");
+        exit(1);
+    } else {
+        for (int i = 0; i < FRAMES; ++i) {
+            if (band == 0 && RERR[i].clasificacion == '1') {
+                fprintf(outfile, "%d\t%lf\t%lf\t%lf\n", RERR[i].frame, RERR[i].log_val, RLIM[0].threshold, RLIM[1].threshold);
+            } else if (band == 1 && RCE[i].clasificacion == '1' && RERR[i].clasificacion == '1') {
+                fprintf(outfile, "%d\t%lf\t%lf\t%lf\n", RERR[i].frame, RERR[i].log_val, RLIM[0].threshold, RLIM[1].threshold);
+            }
+        }
+
+        if (fwrite != 0) {
+            printf("contents to file written successfully !\n");
+        } else
+            printf("error writing file !\n");
+
+        // close file
+        fclose(outfile);
+    }
+}
+
 void LeerClasificacionManual(IntervalsStruct *RI) {
 
     FILE *file = fopen(FICHEROINTERVALOS, "r");
@@ -256,7 +287,7 @@ void SepararIntervalos(IntervalsStruct *RI, FramesLogClassifStruct *RFC) {
         ninterv = RI[i].interv_tiempo * 100;
 //        printf("#intervalos: %d\n", ninterv);
         for (int j = pos; j < ninterv + pos; ++j) {
-            RFC[j].frame = j+1;
+            RFC[j].frame = j + 1;
             RFC[j].clasificacion = RI[i].clasificacion;
 //            printf("%d, %c\n", RFC[j].frame, RFC[j].clasificacion);
         }
@@ -574,6 +605,22 @@ void EncontrarFramesCertidumbre(FramesLogClassifStruct *REL, FramesLogClassifStr
 
 }
 
+void EncontrarFramesError(FramesLogClassifStruct *REL, FramesLogClassifStruct *RM, FramesLogClassifStruct *RERR) {
+
+    for (int i = 0; i < FRAMES; ++i) {
+        RERR[i].frame = i + 1;
+        RERR[i].log_val = REL[i].log_val;
+        if (REL[i].clasificacion == RM[i].clasificacion) {
+            RERR[i].clasificacion = '0';
+        } else {
+            RERR[i].clasificacion = '1';
+//            printf("\n%d", RERR[i].frame);
+        }
+    }
+
+
+}
+
 void ResultadosClassInk(FramesLogClassifStruct *REL, FramesLogClassifStruct *RFMC) {
     int TPv = 0;
     int TNv = 0;
@@ -661,7 +708,7 @@ void ResultadosClassInk(FramesLogClassifStruct *REL, FramesLogClassifStruct *RFM
 }
 
 
-void establecerLimites(ThresholdsStruct *RT, double promLogE, double promLogI) {
+void establecerLimites(ThresholdsStruct *RT, double promLogE, double promLogI, bool lim_author) {
 
     /*
      * Límites establecidos por el autor:
@@ -676,19 +723,23 @@ void establecerLimites(ThresholdsStruct *RT, double promLogE, double promLogI) {
 
     printf("Promedio logE: %.15lf \n", promLogE);
     strcpy(RT[0].tipo, "Eu");
-    RT[0].threshold = 0.5 * promLogE;
+
+    RT[0].threshold = (lim_author) ? promLogE : 0.5 * promLogE;
 
     double limSilencio = 0;
     double limRespiracion = 0;
 
+    int mult_logE;
+    mult_logE = (lim_author) ? 2 : 2;
+
     if (promLogE < -1) {
         promLogE = fabs(promLogE);
 
-        limSilencio = -1 * 4 * sqrt(promLogE);
+        limSilencio = -1 * mult_logE * sqrt(promLogE);
         limRespiracion = -1 * sqrt(4.5 * promLogE);
 
     } else {
-        limSilencio = 4 * sqrt(promLogE);
+        limSilencio = mult_logE * sqrt(promLogE);
         limRespiracion = sqrt(4.5 * promLogE);
     }
 
@@ -704,7 +755,8 @@ void establecerLimites(ThresholdsStruct *RT, double promLogE, double promLogI) {
     printf("Promedio Ink: %.15lf \n", promLogI);
 
     strcpy(RT[3].tipo, "I ");
-    RT[3].threshold = 2 * promLogI;
+    RT[3].threshold = lim_author ? promLogI : 2 * promLogI;
+
 
 }
 
@@ -730,16 +782,17 @@ int main(void) {
     leerPromedios(RPROMS);
 
 //    printf("\n%.15lf %.15lf\n", RPROMS[0].threshold, RPROMS[1].threshold);
-    establecerLimites(RLIMS, RPROMS[0].threshold, RPROMS[1].threshold);
+    bool lim_author = false;
+
+    establecerLimites(RLIMS, RPROMS[0].threshold, RPROMS[1].threshold, lim_author);
 
     leerFicheroLog(RENERGYLOG, 0); //0 Energia
 
     ClasificarVUS(RLIMS, RENERGYLOG, 0); //0 Energia
 
     FramesLogClassifStruct RINKLOG[FRAMES];
-    FramesLogClassifStruct RCERT[FRAMES];
 
-    ResultadosClassEnergia(RENERGYLOG, RFMANUALCLASSIF, RCERT, 0); //0 No usar Frames de Certidumbre
+//    ResultadosClassEnergia(RENERGYLOG, RFMANUALCLASSIF, RCERT, 0); //0 No usar Frames de Certidumbre
 
     //Clasificacion Ink
 
@@ -749,19 +802,27 @@ int main(void) {
 
     ResultadosClassInk(RINKLOG, RFMANUALCLASSIF);
 
-    //Clasificación Intervalos sin incertidumbre
+    int cert = 1;
+
+    //Clasificación Frames con/sin incertidumbre
+    FramesLogClassifStruct RCERT[FRAMES];
     EncontrarFramesCertidumbre(RENERGYLOG, RINKLOG, RCERT);
-    ResultadosClassEnergia(RENERGYLOG, RFMANUALCLASSIF, RCERT, 1); //1 Considerando Solo Certidumbre
+    ResultadosClassEnergia(RENERGYLOG, RFMANUALCLASSIF, RCERT, cert); //1 Considerando Solo Certidumbre
 
     char energy_classif_int[20] = "energy_class_int.dat";
     char ink_classif_int[20] = "ink_class_int.dat";
     char manual_classif_int[20] = "manual_class_int.dat";
 
-    int cert = 1;
-
     EscribirClasificacionFramesNum(RFMANUALCLASSIF, manual_classif_int, RCERT, cert);
     EscribirClasificacionFramesNum(RENERGYLOG, energy_classif_int, RCERT, cert);
     EscribirClasificacionFramesNum(RINKLOG, ink_classif_int, RCERT, cert);
+
+    //Clasificación Frames con Error
+    FramesLogClassifStruct RERROR[FRAMES];
+    EncontrarFramesError(RENERGYLOG, RFMANUALCLASSIF, RERROR);
+
+    EscribirErrorEnergyFrames(RLIMS,RERROR, RCERT, cert);
+
 
     return 0;
 }
