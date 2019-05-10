@@ -730,7 +730,7 @@ void establecerLimites(ThresholdsStruct *RT, double promLogE, double promLogI, b
     double limRespiracion = 0;
 
     int mult_logE;
-    mult_logE = (lim_author) ? 2 : 2;
+    mult_logE = (lim_author) ? 2 : 4;
 
     if (promLogE < -1) {
         promLogE = fabs(promLogE);
