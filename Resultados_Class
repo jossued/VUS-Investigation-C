@@ -220,17 +220,47 @@ Recall T: 0.50735
 Accuracy T: 0.50735
 Fmeasure T: 0.48570
 
-//Separados los intervalos de certidumbre
-Precision V: 0.807163
-Recall V: 0.96700
-Accuracy V: 0.80000
-Fmeasure V: 0.87988
-Precision U: 0.729730
-Recall U: 0.27835
-Accuracy U: 0.80000
-Fmeasure U: 0.40299
-Precision T: 0.702353
-Recall T: 0.63623
-Accuracy T: 0.72255
-Fmeasure T: 0.66766
+i=1
+k=1
+c1 = a1 +1 E(k=1 -> 0) {1*c1*a0}
+c0 = 0
 
+frame	logE 	threshold1 	threshold2	
+
+Intv incert
+V(470) U(267) S(79)
+V(0.575980392156863) U(0.327205882352941) S(0.096813725490196)
+Precision V: 0.902439
+Recall V: 0.86596
+Accuracy V: 0.86887
+Fmeasure V: 0.88382
+Precision U: 0.779720
+Recall U: 0.83521
+Accuracy U: 0.86887
+Fmeasure U: 0.80651
+Precision S: 1.000000
+Recall S: 1.00000
+Accuracy S: 1.00000
+Fmeasure S: 1.00000
+Precision T: 0.871730
+Recall T: 0.86887
+Accuracy T: 0.88157
+Fmeasure T: 0.87030
+
+Int cert
+V(357) U(70) S(0)
+V(0.836065573770492) U(0.163934426229508) S(0.000000000000000)
+Precision V: 0.898630
+Recall V: 0.91877
+Accuracy V: 0.84543
+Fmeasure V: 0.90859
+Precision U: 0.532258
+Recall U: 0.47143
+Accuracy U: 0.84543
+Fmeasure U: 0.50000
+Precision T: 0.838569
+Recall T: 0.84543
+Accuracy T: 0.84543
+Fmeasure T: 0.84199
+
+plot 'frame_error_log.dat' using 1:2, 'frame_error_log.dat' using 1:3, 'frame_error_log.dat' using 1:4
