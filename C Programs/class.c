@@ -782,7 +782,7 @@ int main(void) {
     leerPromedios(RPROMS);
 
 //    printf("\n%.15lf %.15lf\n", RPROMS[0].threshold, RPROMS[1].threshold);
-    bool lim_author = false;
+    bool lim_author = true;
 
     establecerLimites(RLIMS, RPROMS[0].threshold, RPROMS[1].threshold, lim_author);
 
@@ -802,7 +802,7 @@ int main(void) {
 
     ResultadosClassInk(RINKLOG, RFMANUALCLASSIF);
 
-    int cert = 1;
+    int cert = 0;
 
     //Clasificación Frames con/sin incertidumbre
     FramesLogClassifStruct RCERT[FRAMES];

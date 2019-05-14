@@ -135,3 +135,10 @@ d 	65.612	65.702	0.09	V -
 i 	65.702	65.852	0.15	V
 
 *Revisar la clasificación //Hecho
+
+Expresión Regular:
+(\d+(?:\.\d+)?)\n(\d+(?:\.\d+)?)\n"([VUS])"|.+
+$1\t$2\t$3
+
+69.062 pausa?
+queda: # 70.952
